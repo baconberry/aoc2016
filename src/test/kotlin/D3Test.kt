@@ -11,9 +11,23 @@ class D3Test {
         val input = """
             5 10 25
             1 3 3
+            1 1 1
             
         """.trimIndent().split("\n").toTypedArray()
 
-        assertEquals("1", solver.solve(input, 2u))
+        assertEquals("2", solver.solve(input, 1u))
+    }
+    @Test
+    fun solve_Part2() {
+        val solver = D3()
+
+        val input = """
+            5 10 25
+            1 3 3
+            1 1 1
+            
+        """.trimIndent().split("\n").toTypedArray()
+
+        assertEquals("0", solver.solve(input, 2u))
     }
 }
