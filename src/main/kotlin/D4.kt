@@ -3,6 +3,16 @@ import kotlin.math.min
 
 class D4 : Solver {
     override fun solve(lines: Array<String>, part: UInt): String {
+        if (part == 2u) {
+            lines
+                .filter { it.isNotBlank() }
+                .map { it.split("-") }
+                .filter { isRealRoom(it) }
+                .map { decryptRoom(it) }
+                .forEach { println(it) }
+
+            return ""
+        }
         val result = lines
             .filter { it.isNotBlank() }
             .map { it.split("-") }
@@ -10,6 +20,23 @@ class D4 : Solver {
             .sumOf { getSectorId(it) }
 
         return "$result"
+    }
+
+    private fun decryptRoom(it: List<String>): String {
+        val a = 'a'.code
+        val offset = 'z' - 'a' + 1
+        val sectorId = getOneUInt(it.last())
+        val forward = sectorId % offset.toUInt()
+        val sb = StringBuilder()
+        for (s in it.subList(0, it.size - 1)) {
+            for (c in s.chars()) {
+                val nc = (c + forward.toInt() - a) % offset
+                sb.append((a + nc).toChar())
+            }
+            sb.append(" ")
+        }
+        sb.append(it.last())
+        return sb.toString()
     }
 
     private fun getSectorId(it: List<String>): UInt {

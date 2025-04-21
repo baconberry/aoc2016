@@ -17,4 +17,16 @@ class D4Test {
 
         assertEquals("1514", solver.solve(input, 1u))
     }
+
+    @Test
+    fun solve_Part2() {
+        val solver = D4()
+
+        val input = """
+            qzmt-zixmtkozy-ivhz-343[]
+            
+        """.trimIndent().split("\n").toTypedArray()
+
+        assertEquals("", solver.solve(input, 2u))
+    }
 }
