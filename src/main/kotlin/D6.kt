@@ -6,9 +6,19 @@ class D6 : Solver {
         val grid = parseCharGrid(lines).rotate()
         val word = StringBuilder()
         for (chars in grid) {
-            word.append(mostCommonChar(chars))
+            if(part==1u){
+                word.append(mostCommonChar(chars))
+            }else{
+                word.append(leastCommonChar(chars))
+            }
         }
         return word.toString()
+    }
+
+    private fun leastCommonChar(chars: Array<Char>): Any {
+        return freqMap(chars).entries
+            .minBy { it.value }
+            .key
     }
 
     private fun mostCommonChar(chars: Array<Char>): Char {

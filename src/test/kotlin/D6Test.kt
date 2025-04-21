@@ -27,5 +27,6 @@ class D6Test {
         """.trimIndent().split("\n").toTypedArray()
 
         assertEquals("easter", solver.solve(input, 1u))
+        assertEquals("advent", solver.solve(input, 2u))
     }
 }
