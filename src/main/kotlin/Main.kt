@@ -8,6 +8,7 @@ fun main(args: Array<String>) {
     val solver: Solver = when (problem) {
         1 -> D1()
         2 -> D2()
+        3 -> D3()
         else -> {
             throw IllegalArgumentException("No problem with index $problem")
         }
