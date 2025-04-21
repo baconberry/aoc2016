@@ -15,4 +15,15 @@ class D1Test {
             assertEquals(result, solver.solve(input.split("\n").toTypedArray(), 1u))
         }
     }
+
+    @Test
+    fun solve_Part2() {
+        val solver = D1()
+        val inputList = listOf(
+            "R8, R4, R4, R8" to "4",
+        )
+        for ((input, result) in inputList) {
+            assertEquals(result, solver.solve(input.split("\n").toTypedArray(), 2u))
+        }
+    }
 }

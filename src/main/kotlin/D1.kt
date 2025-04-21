@@ -9,10 +9,33 @@ class D1 : Solver {
     override fun solve(lines: Array<String>, part: UInt): String {
         val instructions = parseLines(lines)
 
-        val (x, y) = walk(instructions)
-        val result = abs(x + y)
+        val (x, y) = if (part == 1u) {
+            walk(instructions)
+        } else {
+            walkAndGetFirstRepeated(instructions)
+        }
+        val result = abs(x) + abs(y)
 
         return "$result"
+    }
+
+    private fun walkAndGetFirstRepeated(instructions: List<PDU>): Pair<Int, Int> {
+        var currentPoint = 0 to 0
+        val visited = mutableSetOf(currentPoint)
+        var currentDirection = Direction.NONE
+        for ((d, l) in instructions) {
+            currentDirection = currentDirection.changeTo(d)
+            val res = currentDirection.plusIncrement(l.toInt(), 1)
+            for ((x, y) in res) {
+                currentPoint = currentPoint.first + x to currentPoint.second + y
+                if (currentPoint in visited) {
+                    return currentPoint
+                } else {
+                    visited.add(currentPoint)
+                }
+            }
+        }
+        return currentPoint
     }
 
     private fun walk(instructions: List<PDU>): Pair<Int, Int> {

@@ -55,6 +55,17 @@ enum class Direction {
         dy *= scale
         return currentPoint.first + dx to currentPoint.second + dy
     }
+
+    fun plusIncrement(scale: Int, increment: Int): List<Pair<Int, Int>> {
+        val (dx, dy) = this.diff()
+        var i=0
+        val result = mutableListOf<Pair<Int, Int>>()
+        while(i<(scale)){
+            result.add(dx to dy)
+            i+= increment
+        }
+        return result
+    }
 }
 
 fun parseDirection(c: Char): Direction {
