@@ -9,6 +9,7 @@ fun main(args: Array<String>) {
         1 -> D1()
         2 -> D2()
         3 -> D3()
+        4 -> D4()
         else -> {
             throw IllegalArgumentException("No problem with index $problem")
         }
