@@ -1,6 +1,5 @@
 import utils.getUIntList
 
-typealias PUUU = Pair<Pair<UInt, UInt>, UInt>
 
 class D3 : Solver {
     override fun solve(lines: Array<String>, part: UInt): String {
@@ -49,11 +48,5 @@ class D3 : Solver {
         val b = l[1]
         val c = l[2]
         return a + b > c && a + c > b && b + c > a
-    }
-
-    fun puuuToList(p: PUUU): List<UInt> {
-        val (z, c) = p
-        val (a, b) = z
-        return listOf(a, b, c)
     }
 }
