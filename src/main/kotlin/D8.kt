@@ -17,6 +17,7 @@ class D8(val rows: Int, val columns: Int) : Solver {
                     "rc" -> display.rotateColumn(it.a(), it.b())
                 }
             }
+        display.prettyPrint()
         return "${display.countValue(true)}"
     }
 }
@@ -84,4 +85,21 @@ fun <E> Display<E>.countValue(value: E): Int {
     return this
         .flatMap { it.toList() }
         .count { it == value }
+}
+
+fun Display<Boolean>.prettyPrint() {
+    val separator = " "
+    for (y in 0..<this.size) {
+        val row = this[y]
+        for (x in 0..<row.size) {
+            val value = if (row[x]) {
+                "O"
+            } else {
+                "."
+            }
+            print(value)
+            print(separator)
+        }
+        print("\n")
+    }
 }
