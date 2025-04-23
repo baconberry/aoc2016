@@ -7,7 +7,7 @@ fun getOneUInt(s: String): UInt {
     return match?.value?.toUInt() ?: UInt.MAX_VALUE
 }
 
-fun getUIntList(s: String): List<UInt> {
+fun getUIntList(s: CharSequence): List<UInt> {
     val regex = """(\d+)""".toRegex()
     val matches = regex.findAll(s)
     return matches.toList()
