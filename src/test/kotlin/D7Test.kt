@@ -4,6 +4,7 @@ import org.junit.jupiter.api.Assertions.*
 
 class D7Test {
     private val solver = D7()
+
     @Test
     fun solve() {
 
@@ -37,5 +38,13 @@ class D7Test {
         assertTrue("ioxxo".isAbba())
         assertFalse("ioxoj".isAbba())
         assertFalse("abbo".isAbba())
+    }
+
+    @Test
+    fun isAba() {
+        assertTrue("aba[bab]xyz".isAba())
+        assertFalse("xyx[xyx]xyx".isAba())
+        assertTrue("aaa[kek]eke".isAba())
+        assertTrue("zazbz[bzb]cdb".isAba())
     }
 }
