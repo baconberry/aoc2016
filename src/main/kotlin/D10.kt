@@ -12,24 +12,32 @@ class D10 : Solver {
     val bins = mutableMapOf<Int, Microchip>()
 
     override fun solve(lines: Array<String>, part: UInt): String {
+
         lines
             .filter { it.isNotBlank() }
             .forEach { processLine(it) }
-        val bot = triggerBots()
+        val bot = triggerBots(part == 1u)
+        if (part == 2u) {
+            val a = requireNotNull(bins[0])
+            val b = requireNotNull(bins[1])
+            val c = requireNotNull(bins[2])
+            val result = a * b * c
+            return "$result"
+        }
         val result = bots.entries
             .first { it.value == bot }
 
         return "$result"
     }
 
-    private fun triggerBots(): Bot {
+    private fun triggerBots(stopAtFilter: Boolean): Bot? {
         val q = ArrayDeque<Bot>()
         bots.values
             .filter { it.isFull() }
             .forEach { q.add(it) }
         while (q.isNotEmpty()) {
             val bot = q.removeFirst()
-            if (bot.values.contains(61, 17)) {
+            if (stopAtFilter && bot.values.contains(61, 17)) {
                 return bot
             }
             val bots = bot.flush(bots, bins)
@@ -37,7 +45,7 @@ class D10 : Solver {
                 .filter { it.isFull() }
                 .forEach { q.add(it) }
         }
-        throw IllegalStateException()
+        return null
     }
 
     val numberRegex = """\d+""".toRegex()
