@@ -7,6 +7,9 @@ class D12 : Solver {
             .toList()
 
         val emu = Emu(instructions)
+        if(part==2u){
+            emu.registers["c"] = 1
+        }
         emu.execute()
         return "${emu.registers["a"]}"
     }
