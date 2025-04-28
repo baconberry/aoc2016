@@ -17,7 +17,7 @@ fun getUIntList(s: CharSequence): List<UInt> {
 }
 
 fun getIntList(s: CharSequence): List<Int> {
-    val regex = """(\d+)""".toRegex()
+    val regex = """(-?\d+)""".toRegex()
     val matches = regex.findAll(s)
     return matches.toList()
         .map { it.value }
