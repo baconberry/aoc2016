@@ -77,3 +77,7 @@ fun parseDirection(c: Char): Direction {
         else -> Direction.NONE
     }
 }
+
+fun cardinalDirections(): List<Direction>{
+    return listOf(Direction.N, Direction.S, Direction.E, Direction.W)
+}
