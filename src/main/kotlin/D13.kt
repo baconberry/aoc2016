@@ -12,9 +12,14 @@ class D13 : Solver {
         val favNumber = lines.first().toInt()
         val lazyMap = LazyBinaryMap(favNumber)
 
-        val minPath = lazyMap.shortestPath(1 to 1, 31 to 39)
+        val result =
+            if (part == 1u) {
+                lazyMap.shortestPath(1 to 1, 31 to 39)
+            } else {
+                lazyMap.reachability(1 to 1, 50).size
+            }
 
-        return "$minPath"
+        return "$result"
     }
 
 
@@ -43,6 +48,28 @@ class D13 : Solver {
                 }
             }
             return Int.MAX_VALUE
+        }
+
+        fun reachability(start: Coord, maxDist: Int): Set<Coord> {
+            val visited = mutableSetOf<Coord>()
+            val distances = mutableMapOf<Coord, Int>()
+            val q = PriorityQueue<CoordDist>(Comparator.comparing { it.second })
+
+            visited.add(start)
+            distances[start] = 0
+            getAdjacentNodes(start).forEach { q.add(it to 0) }
+            while (q.isNotEmpty()) {
+                val (node, prevDistance) = q.poll()
+                val dist = prevDistance + 1
+                visited.add(node)
+                distances[node] = dist
+                getAdjacentNodes(node)
+                    .filter { !visited.contains(it) }
+                    .filter { !it.isNegative() }
+                    .filter { dist < maxDist }
+                    .forEach { q.add(it to dist) }
+            }
+            return visited
         }
 
         fun getAdjacentNodes(pos: Coord): List<Coord> {
@@ -92,4 +119,8 @@ fun CharSequence.toFrequencyMap(): Map<Char, Int> {
     }
 
     return map
+}
+
+fun Coord.isNegative(): Boolean {
+    return this.first < 0 || this.second < 0
 }
