@@ -43,34 +43,28 @@ class D14 : Solver {
         fun naiveSolution(n: Int): Int {
             var counter = 0
             val md = MessageDigest.getInstance("MD5")
-            val pairList = mutableListOf<Pair<Int, Int>>()
             for (c in 0..Int.MAX_VALUE) {
                 val md5 = "$salt$c".digest(md).lowercase()
                 val c3 = charCounter.get3Chars(md5)
-                if (c3.isNotEmpty()) {
-                    val idx5 = has5chars(c + 1, c3.first(), md)
-                    if (idx5 != null) {
-                        pairList.add(c to idx5)
-                        pairList.sortWith(Comparator.comparing { it.second })
-                        counter++
-                    }
+                if (c3.isNotEmpty() && has5chars(c + 1, c3.first(), md)) {
+                    counter++
                 }
-                if (counter == n +1001) {
-                    return pairList[63].first
+                if (counter == n) {
+                    return c
                 }
             }
             return Int.MAX_VALUE
         }
 
-        private fun has5chars(start: Int, c3: Char, md: MessageDigest): Int? {
+        private fun has5chars(start: Int, c3: Char, md: MessageDigest): Boolean {
             for (c in start..start + 1000) {
                 val md5 = "$salt$c".digest(md).lowercase()
                 val c5 = charCounter.get5Chars(md5)
                 if (c3 in c5) {
-                    return c
+                    return true
                 }
             }
-            return null
+            return false
         }
 
     }
