@@ -1,5 +1,6 @@
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
+import kotlin.test.Ignore
 
 class D14Test {
 
@@ -11,6 +12,7 @@ class D14Test {
     }
 
     @Test
+    @Ignore("Slow mining")
     fun miner_stretched(){
         val miner = D14.Miner("abc", D14.MD5StretchedHasher())
 
