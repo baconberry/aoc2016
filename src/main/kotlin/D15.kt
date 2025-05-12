@@ -3,7 +3,12 @@ import utils.getIntList
 class D15 : Solver {
     override fun solve(lines: Array<String>, part: UInt): String {
 
-        val discs = parseDiscs(lines)
+        var discs = parseDiscs(lines)
+        if (part == 2u) {
+            val aux = discs.toMutableList()
+            aux.add(Disc(11, 0))
+            discs = aux.toTypedArray()
+        }
         val result = solve(discs)
         return "$result"
     }
