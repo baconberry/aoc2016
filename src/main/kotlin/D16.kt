@@ -1,12 +1,21 @@
-class D16(val minLen: Int) : Solver {
+class D16 : Solver {
     override fun solve(lines: Array<String>, part: UInt): String {
         val input = lines.first()
+        val minLen = if (part == 1u) {
+            272
+        } else {
+            35651584
+        }
+        return solve(input, minLen)
+    }
+
+    fun solve(input: String, minLen: Int): String {
         val dc = input.dragonCurve(minLen)
         var result = dc.dragonChecksum()
         while (result.length % 2 == 0) {
             result = result.dragonChecksum()
         }
-        return "$result"
+        return result.toString()
     }
 
 }

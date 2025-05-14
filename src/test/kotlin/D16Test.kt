@@ -4,14 +4,14 @@ import org.junit.jupiter.api.Test
 class D16Test {
 
     @Test
-    fun solve(){
-        val solver = D16(20)
-        val result = solver.solve(listOf<String>("10000").toTypedArray(), 1u)
+    fun solve() {
+        val solver = D16()
+        val result = solver.solve("10000", 20)
         assertEquals("01100", result)
     }
 
     @Test
-    fun dragonCurve(){
+    fun dragonCurve() {
         val expected = listOf<Pair<String, String>>(
             "1" to "100",
             "0" to "001",
