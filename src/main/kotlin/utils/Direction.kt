@@ -58,13 +58,23 @@ enum class Direction {
 
     fun plusIncrement(scale: Int, increment: Int): List<Pair<Int, Int>> {
         val (dx, dy) = this.diff()
-        var i=0
+        var i = 0
         val result = mutableListOf<Pair<Int, Int>>()
-        while(i<(scale)){
+        while (i < (scale)) {
             result.add(dx to dy)
-            i+= increment
+            i += increment
         }
         return result
+    }
+
+    fun toCommonDirName(): Char {
+        return when (this) {
+            N -> 'U'
+            S -> 'D'
+            E -> 'R'
+            W -> 'L'
+            NONE -> 'N'
+        }
     }
 }
 
@@ -78,6 +88,7 @@ fun parseDirection(c: Char): Direction {
     }
 }
 
-fun cardinalDirections(): List<Direction>{
+
+fun cardinalDirections(): List<Direction> {
     return listOf(Direction.N, Direction.S, Direction.E, Direction.W)
 }
