@@ -5,13 +5,45 @@ typealias Position = Pair<Int, Int>
 
 class D17 : Solver {
     override fun solve(lines: Array<String>, part: UInt): String {
-        val maze = MD5Maze(4, 4, lines.first())
+        val passcode = lines.first()
+        val maze = MD5Maze(4, 4, passcode)
+        if (part == 2u) {
+            val result = maze.maxPath(0 to 0)
+            val max = result!!.length - passcode.length
+            return "$max"
+        }
         return "${maze.minPath(0 to 0)}"
     }
 
     class MD5Maze(val width: Int, val height: Int, val passcode: String) {
         var minPathLength = Int.MAX_VALUE
+        var maxPathLength = Int.MIN_VALUE
         val validRange = 0..3
+
+        fun maxPath(pos: Position, path: String = passcode): String? {
+            if (pos == width - 1 to height - 1) {
+                return path
+            }
+            val openedDoors = path.md5OpenDoors()
+            var max: String? = null
+            for (direction in openedDoors) {
+                val newPos = pos.plus(direction.diff().invertSecond())
+                if (newPos.first !in validRange || newPos.second !in validRange) {
+                    continue
+                }
+                val localRes = maxPath(newPos, "$path${direction.toCommonDirName()}")
+                if (localRes == null) {
+                    continue
+                }
+                if (localRes.length > maxPathLength) {
+                    maxPathLength = localRes.length
+                }
+                if (max == null || localRes.length > max.length) {
+                    max = localRes
+                }
+            }
+            return max
+        }
 
         fun minPath(pos: Position, path: String = passcode): String? {
             if (path.length > minPathLength) {
