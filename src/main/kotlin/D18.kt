@@ -1,7 +1,11 @@
 class D18 : Solver {
     override fun solve(lines: Array<String>, part: UInt): String {
         val input = lines.first()
-        val maze = MineMaze(40, input.length)
+        val maze = if (part == 1u) {
+            MineMaze(40, input.length)
+        } else {
+            MineMaze(400000, input.length)
+        }
         maze.parseFirstRow(input)
         maze.fillMaze()
         return "${maze.countSafe()}"
