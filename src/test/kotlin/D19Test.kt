@@ -9,5 +9,11 @@ class D19Test {
         table.fillPersons()
         assertEquals(3, table.takeGifts().idx)
     }
+    @Test
+    fun takeInFrontGifts() {
+        val table = D19.RoundTable(5)
+        table.fillPersons()
+        assertEquals(2, table.takeFromFront().idx)
+    }
 
 }
