@@ -13,7 +13,7 @@ class D19Test {
     fun takeInFrontGifts() {
         val table = D19.RoundTable(5)
         table.fillPersons()
-        assertEquals(2, table.takeFromFront().idx)
+        assertEquals(2, table.takeFromFront())
     }
 
 }

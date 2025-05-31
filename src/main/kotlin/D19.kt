@@ -5,10 +5,10 @@ class D19 : Solver {
         val total = lines.first().toInt()
         val table = RoundTable(total)
         table.fillPersons()
-        val last = if(part==1u){
+        val last = if (part == 1u) {
             table.takeGifts()
-        }else{
-            table.takeFromFront()
+        } else {
+            return "${table.takeFromFront()}"
         }
         return "${last.idx}"
     }
@@ -16,7 +16,6 @@ class D19 : Solver {
 
     class RoundTable(val places: Int) {
         val firstPerson = SeatedPerson(1, 1, null, null)
-        var currentCount = places
         fun fillPersons() {
             var prevPerson = firstPerson
             for (idx in 2..places) {
@@ -41,30 +40,28 @@ class D19 : Solver {
             return person
         }
 
-        fun takeFromFront(): SeatedPerson {
-            var person = firstPerson
-            while (true) {
-                val inFront = personInFront(person)
-                person.gifts += inFront.gifts
-                inFront.prevPerson!!.nextPerson = inFront.nextPerson
-                if (person.nextPerson == inFront) {
-                    person.nextPerson = inFront.nextPerson
-                }
-                currentCount--
-                if (currentCount == 1) {
-                    return person
-                }
-                person = person.nextPerson!!
+        fun takeFromFront(): Int {
+            val middle = floor(places / 2.0).toInt()
+            val q1 = ArrayDeque<Int>()
+            val q2 = ArrayDeque<Int>()
+            for (i in 1..middle) {
+                q1.addLast(i)
             }
-        }
-
-        private fun personInFront(person: SeatedPerson): SeatedPerson {
-            val middle = floor(currentCount / 2.0).toInt()
-            var result = person
-            repeat(middle) {
-                result = result.nextPerson!!
+            for (i in middle + 1..places) {
+                q2.addLast(i)
             }
-            return result
+            while (q2.isNotEmpty()) {
+                if (q1.isEmpty()) {
+                    return q2.removeFirst()
+                }
+                val v1 = q1.removeFirst()
+                q2.removeFirst()
+                q2.addLast(v1)
+                if (q2.size - q1.size > 1) {
+                    q1.addLast(q2.removeFirst())
+                }
+            }
+            return q1.removeFirst()
         }
     }
 
