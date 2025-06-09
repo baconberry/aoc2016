@@ -25,6 +25,7 @@ fun main(args: Array<String>) {
         18 -> D18()
         19 -> D19()
         20 -> D20()
+        21 -> D21()
         else -> {
             throw IllegalArgumentException("No problem with index $problem")
         }
