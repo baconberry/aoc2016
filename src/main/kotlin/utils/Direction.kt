@@ -92,3 +92,4 @@ fun parseDirection(c: Char): Direction {
 fun cardinalDirections(): List<Direction> {
     return listOf(Direction.N, Direction.S, Direction.E, Direction.W)
 }
+val CARDINAL_DIRECTIONS = listOf(Direction.N, Direction.S, Direction.E, Direction.W)

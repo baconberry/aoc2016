@@ -36,3 +36,11 @@ fun freqMap(chars: Array<Char>): Map<Char, Int> {
     }
     return map
 }
+fun <E>listToFreqMap(list: List<E>): Map<E, Int> {
+    val map = mutableMapOf<E, Int>()
+    for (char in list) {
+        val count = map.getOrDefault(char, 0)
+        map[char] = count + 1
+    }
+    return map
+}

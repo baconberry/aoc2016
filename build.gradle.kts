@@ -28,4 +28,6 @@ application {
 
 tasks.run.invoke {
     standardInput = System.`in`
+    standardOutput = System.out
+    jvmArgs = listOf("-Xss4m")
 }
