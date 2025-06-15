@@ -1,25 +1,60 @@
 import utils.Direction
 import utils.getIntList
 import java.security.MessageDigest
+import java.util.PriorityQueue
 import kotlin.math.abs
 import kotlin.streams.toList
 
 class D22 : Solver {
     override fun solve(lines: Array<String>, part: UInt): String {
+        var idder = 0
         val nodes = lines.toList().stream()
             .filter { it.isNotEmpty() }
             .skip(2)
             .map { getIntList(it) }
-            .map { createDevNode(it[0] to it[1], it[2], it[3]) }
+            .map { createDevNode(idder++, it[0] to it[1], it[2], it[3]) }
             .toList()
         if (part == 2u) {
             val grid = createDevNodeGrid(nodes)
-            NODE_LOC_TARGET = grid.maxLoc.first to 0
-            val result = solveGrid(grid, 0, mutableSetOf<String>())
+            NODE_LOC_TARGET = grid.getDevNode(grid.maxLoc.first to 0).id
+//            val result = solveGrid(grid, 0, mutableSetOf<String>())
+            val result = dijkstra(grid)
             return "$result"
         }
 
         return "${getViablePairs(nodes).size}"
+    }
+
+    fun dijkstra(grid: DevNodeGrid): Int {
+        val q = PriorityQueue<Pair<DevNodeGrid, Int>>(Comparator.comparing { it.second })
+        val visited = mutableSetOf<String>()
+        q.add(grid to 0)
+        var depth = -1
+
+        while (q.isNotEmpty()) {
+            val n = q.remove()!!
+            val egrid = n.first
+            val first = grid.getDevNode(0 to 0)
+            if (first.dataLoc.size == 1 && first.dataLoc.first() == NODE_LOC_TARGET) {
+                return n.second
+            }
+            if (n.second > depth) {
+                depth = n.second
+                println("Visiting $depth")
+            }
+            for (v in egrid.viablePairs()) {
+                val newGrid = egrid.move(v.first.loc, v.second)
+                if (newGrid == null) {
+                    continue
+                }
+                val newGridHash = newGrid.gridHash()
+                if (newGridHash !in visited) {
+                    q.add(newGrid to n.second + 1)
+                    visited.add(newGridHash)
+                }
+            }
+        }
+        throw IllegalStateException("Could not find solution to grid")
     }
 
     fun solveGrid(
@@ -29,7 +64,7 @@ class D22 : Solver {
         path: List<Pair<NodeLoc, Direction>> = listOf()
     ): Int {
         val first = grid.getDevNode(0 to 0)
-        if (first.dataLoc.size == 1 && first.dataLoc.first() == grid.maxLoc.second to 0) {
+        if (first.dataLoc.size == 1 && first.dataLoc.first() == NODE_LOC_TARGET) {
             return steps
         }
 
@@ -153,10 +188,11 @@ fun isViable(a: DevNode, b: DevNode): Boolean {
 typealias NodeLoc = Pair<Int, Int>
 
 
-var NODE_LOC_TARGET = 0 to 0
-data class DevNode(
+var NODE_LOC_TARGET = 0
+
+data class DevNode(val id: Int,
     val loc: NodeLoc, val size: Int, val used: Int,
-    val dataLoc: List<NodeLoc> = listOf()
+    val dataLoc: List<Int> = listOf()
 ) { // dataLoc will have the positions of the data inside so if you move 0-0 to 1-1, 1-1 will have 1-1,0-0
 
     fun available(): Int {
@@ -167,11 +203,11 @@ data class DevNode(
     fun addData(a: DevNode): DevNode {
         val listData = this.dataLoc.toMutableList()
         listData.addAll(a.dataLoc)
-        return DevNode(loc, size, used + a.used, listData)
+        return DevNode(id, loc, size, used + a.used, listData)
     }
 
     fun clear(): DevNode {
-        return DevNode(loc, size, 0)
+        return DevNode(id, loc, size, 0)
     }
 }
 
@@ -204,6 +240,10 @@ class DevNodeGrid(val grid: List<List<DevNode>>, val maxLoc: NodeLoc = getMaxLoc
         var a = getDevNode(loc)
         var b = getDevNode(newLoc)
         if (b.available() < a.used) {
+            return null
+        }
+        if (a.dataLoc.size == 1 && a.dataLoc.first() == NODE_LOC_TARGET && b.dataLoc.isNotEmpty()) {
+            // target data will mingle with others, return null
             return null
         }
         val newGrid = cloneGrid(grid)
@@ -249,17 +289,19 @@ class DevNodeGrid(val grid: List<List<DevNode>>, val maxLoc: NodeLoc = getMaxLoc
             }
         }
         return result.sortedBy { distanceToTarget(it.first) }
+//        return result
     }
 
     private fun distanceToTarget(node: DevNode): Int {
-        if(node.dataLoc.size == 1 && node.dataLoc.first() == NODE_LOC_TARGET){
-            return -1
+        if (node.dataLoc.size == 1 && node.dataLoc.first() == NODE_LOC_TARGET) {
+            return 1
         }
-        if(node.dataLoc.size == 1){
-            return node.dataLoc.first().distanceTo(NODE_LOC_TARGET)
-        }
+//        if (node.dataLoc.size == 1) {
+//            return node.dataLoc.first().distanceTo(NODE_LOC_TARGET)
+//        }
 
-        return Int.MAX_VALUE
+//        return Int.MAX_VALUE
+        return 2
     }
 
     fun gridHash(): String {
@@ -275,17 +317,17 @@ class DevNodeGrid(val grid: List<List<DevNode>>, val maxLoc: NodeLoc = getMaxLoc
 
 }
 
-fun  NodeLoc.distanceTo(o: NodeLoc): Int {
-    val a = abs(this.first-o.first)
-    val b = abs(this.second-o.second)
-    return a+b
+fun NodeLoc.distanceTo(o: NodeLoc): Int {
+    val a = abs(this.first - o.first)
+    val b = abs(this.second - o.second)
+    return a + b
 }
 
 
-fun createDevNode(loc: NodeLoc, size: Int, used: Int): DevNode {
+fun createDevNode(id: Int, loc: NodeLoc, size: Int, used: Int): DevNode {
     return DevNode(
-        loc, size, used, if (used > 0) {
-            listOf(loc)
+        id,loc, size, used, if (used > 0) {
+            listOf(id)
         } else {
             listOf()
         }
