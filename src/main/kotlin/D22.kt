@@ -1,9 +1,11 @@
 import utils.Direction
 import utils.getIntList
-import java.security.MessageDigest
 import java.util.PriorityQueue
+import kotlin.collections.ArrayDeque
 import kotlin.math.abs
 import kotlin.streams.toList
+
+val FIRST_NODE_LOC = 0 to 0
 
 class D22 : Solver {
     override fun solve(lines: Array<String>, part: UInt): String {
@@ -16,33 +18,32 @@ class D22 : Solver {
             .toList()
         if (part == 2u) {
             val grid = createDevNodeGrid(nodes)
-            NODE_LOC_TARGET = grid.getDevNode(grid.maxLoc.first to 0).id
-//            val result = solveGrid(grid, 0, mutableSetOf<String>())
-            val result = dijkstra(grid)
+            NODE_LOC_TARGET = grid.getDevNode(MAX_LOC.first to 0).id
+            val result = bfs(grid)
             return "$result"
         }
 
         return "${getViablePairs(nodes).size}"
     }
 
-    fun dijkstra(grid: DevNodeGrid): Int {
-        val q = PriorityQueue<Pair<DevNodeGrid, Int>>(Comparator.comparing { it.second })
+    fun totalDist(it: Pair<DevNodeGrid, Int>): Int {
+        return it.first.targetDataLoc.distanceTo(it.first.emptyNodeLoc) +
+                it.first.targetDataLoc.distanceTo(FIRST_NODE_LOC)
+    }
+
+    fun bfs(grid: DevNodeGrid): Int {
+        val q = PriorityQueue<Pair<DevNodeGrid, Int>>(Comparator.comparing { totalDist(it) })
         val visited = mutableSetOf<String>()
         q.add(grid to 0)
-        var depth = -1
 
         while (q.isNotEmpty()) {
             val n = q.remove()!!
             val egrid = n.first
-            val first = grid.getDevNode(0 to 0)
-            if (first.dataLoc.size == 1 && first.dataLoc.first() == NODE_LOC_TARGET) {
+            if (egrid.targetDataLoc == FIRST_NODE_LOC) {
                 return n.second
             }
-            if (n.second > depth) {
-                depth = n.second
-                println("Visiting $depth")
-            }
-            for (v in egrid.viablePairs()) {
+            val viables = egrid.viableFromEmpty()
+            for (v in viables) {
                 val newGrid = egrid.move(v.first.loc, v.second)
                 if (newGrid == null) {
                     continue
@@ -57,71 +58,16 @@ class D22 : Solver {
         throw IllegalStateException("Could not find solution to grid")
     }
 
-    fun solveGrid(
-        grid: DevNodeGrid,
-        steps: Int = 0,
-        visitedPaths: MutableSet<String>,
-        path: List<Pair<NodeLoc, Direction>> = listOf()
-    ): Int {
-        val first = grid.getDevNode(0 to 0)
-        if (first.dataLoc.size == 1 && first.dataLoc.first() == NODE_LOC_TARGET) {
-            return steps
-        }
-
-        if (path.size > 10000) {
-//            println("max path size exceeded")
-            return Int.MAX_VALUE
-        }
-        val pathHash = grid.gridHash()
-        if (pathHash in visitedPaths) {
-//            println("path visited, exiting")
-            return Int.MAX_VALUE
-        }
-        visitedPaths.add(pathHash)
-
-        val viable = grid.viablePairs()
-        var min = Int.MAX_VALUE
-        for (v in viable) {
-//            if (isReturning(path, v)) {
-////                println("returning... exiting")
-//                continue
-//            }
-            val newPath = path.toMutableList()
-//            if (hasCycleIterative(newPath)) {
-////                println("cycle detected... exiting")
-//                continue
-//            }
-            newPath.add(v.first.loc to v.second)
-            val localResult = solveGrid(grid.move(v.first.loc, v.second)!!, steps + 1, visitedPaths, newPath)
-            if (localResult < min) {
-                println("found new min localResult $localResult")
-                return localResult
-                min = localResult
-            }
-        }
-        return min
-    }
-
-
-    private fun isReturning(path: List<Pair<NodeLoc, Direction>>, v: Pair<DevNode, Direction>): Boolean {
-        if (path.isEmpty()) {
-            return false
-        }
-        val last = path.last()
-        return last.first.plus(last.second.diff()) == v.first.loc &&
-                v.first.loc.plus(v.second.diff()) == last.first
-    }
-
     private fun getViablePairs(nodes: List<DevNode>): List<Pair<NodeLoc, NodeLoc>> {
         val result = mutableListOf<Pair<NodeLoc, NodeLoc>>()
         for (i in 0..<nodes.size) {
             val a = nodes[i]
             for (j in i + 1..<nodes.size) {
                 val b = nodes[j]
-                if (isViable(a, b)) {
+                if (isViableTarget(b)) {
                     result.add(a.loc to b.loc)
                 }
-                if (isViable(b, a)) {
+                if (isViableTarget(a)) {
                     result.add(b.loc to a.loc)
                 }
             }
@@ -130,19 +76,6 @@ class D22 : Solver {
     }
 
 
-}
-
-val sha256MD = MessageDigest.getInstance("SHA-256")
-fun String.sha256Hex(): String {
-    return this.digest(sha256MD)
-}
-
-fun hashPath(path: List<Pair<NodeLoc, Direction>>): String {
-    val sb = StringBuilder()
-    for (pair in path) {
-        sb.append("${pair.first}:${pair.second},")
-    }
-    return sb.toString().sha256Hex()
 }
 
 fun <E> hasCycle(path: List<E>, lastPath: List<E> = listOf()): Boolean {
@@ -178,11 +111,8 @@ fun <E> hasCycleIterative(path: List<E>): Boolean {
     return false
 }
 
-fun isViable(a: DevNode, b: DevNode): Boolean {
-    if (a.used == 0) {
-        return false
-    }
-    return a.used <= b.available()
+fun isViableTarget(b: DevNode): Boolean {
+    return b.used == 0
 }
 
 typealias NodeLoc = Pair<Int, Int>
@@ -190,7 +120,8 @@ typealias NodeLoc = Pair<Int, Int>
 
 var NODE_LOC_TARGET = 0
 
-data class DevNode(val id: Int,
+data class DevNode(
+    val id: Int,
     val loc: NodeLoc, val size: Int, val used: Int,
     val dataLoc: List<Int> = listOf()
 ) { // dataLoc will have the positions of the data inside so if you move 0-0 to 1-1, 1-1 will have 1-1,0-0
@@ -211,13 +142,6 @@ data class DevNode(val id: Int,
     }
 }
 
-fun getMaxLoc(grid: List<List<DevNode>>): Pair<Int, Int> {
-    return getMaxLocList(
-        grid.stream()
-            .flatMap { it.stream() }
-            .toList())
-}
-
 fun getMaxLocList(nodes: List<DevNode>): NodeLoc {
     var maxX = 0
     var maxY = 0
@@ -232,7 +156,13 @@ fun getMaxLocList(nodes: List<DevNode>): NodeLoc {
     return maxX to maxY
 }
 
-class DevNodeGrid(val grid: List<List<DevNode>>, val maxLoc: NodeLoc = getMaxLoc(grid)) {
+class DevNodeGrid(
+    val parent: DevNodeGrid?,
+    val grid: List<List<DevNode>>,
+    val targetDataLoc: NodeLoc,
+    val emptyNodeLoc: NodeLoc = getEmptyNodeLoc(grid)
+) {
+    val parentOverwrites = mutableListOf<DevNode>()
 
 
     fun move(loc: NodeLoc, dir: Direction): DevNodeGrid? {
@@ -246,75 +176,54 @@ class DevNodeGrid(val grid: List<List<DevNode>>, val maxLoc: NodeLoc = getMaxLoc
             // target data will mingle with others, return null
             return null
         }
-        val newGrid = cloneGrid(grid)
         b = b.addData(a)
         a = a.clear()
-        newGrid[loc.second][loc.first] = a
-        newGrid[newLoc.second][newLoc.first] = b
-        return DevNodeGrid(newGrid, maxLoc)
+        var newTargetDataLoc = targetDataLoc
+        if (b.dataLoc.size == 1 && b.dataLoc.first() == NODE_LOC_TARGET) {
+            newTargetDataLoc = b.loc
+        }
+        val newGrid = DevNodeGrid(this, listOf(), newTargetDataLoc, a.loc)
+        newGrid.parentOverwrites.add(a)
+        newGrid.parentOverwrites.add(b)
+        return newGrid
     }
 
     fun getDevNode(loc: NodeLoc): DevNode {
+        for (node in parentOverwrites) {
+            if (node.loc == loc) {
+                return node
+            }
+        }
+        if (parent != null) {
+            return parent.getDevNode(loc)
+        }
         return grid[loc.second][loc.first]
     }
 
-    private fun cloneGrid(grid: List<List<DevNode>>): List<MutableList<DevNode>> {
-        val g = mutableListOf<MutableList<DevNode>>()
-        for (nl in grid) {
-            g.add(nl.toMutableList())
-        }
-        return g
-    }
 
-    fun viablePairs(): Collection<Pair<DevNode, Direction>> {
-//        val result = ArrayDeque<Pair<DevNode, Direction>>()
-        val result = mutableListOf<Pair<DevNode, Direction>>()
-//        var count = 0;
-        for (row in grid) {
-            for (n in row) {
-                for (dir in utils.CARDINAL_DIRECTIONS) {
-                    val newLoc = n.loc.plus(dir.diff())
-                    if (newLoc.isValid(maxLoc)) {
-                        val b = getDevNode(newLoc)
-                        if (isViable(n, b)) {
-                            result.add(n to dir)
-//                            if(count++%2==0){
-//                                result.addFirst(n to dir)
-//                            }else {
-//                                result.addLast(n to dir)
-//                            }
-                        }
-                    }
-                }
-            }
-        }
-        return result.sortedBy { distanceToTarget(it.first) }
-//        return result
-    }
-
-    private fun distanceToTarget(node: DevNode): Int {
-        if (node.dataLoc.size == 1 && node.dataLoc.first() == NODE_LOC_TARGET) {
-            return 1
-        }
-//        if (node.dataLoc.size == 1) {
-//            return node.dataLoc.first().distanceTo(NODE_LOC_TARGET)
-//        }
-
-//        return Int.MAX_VALUE
-        return 2
+    fun viableFromEmpty(): Collection<Pair<DevNode, Direction>> {
+        return utils.CARDINAL_DIRECTIONS
+            .map { emptyNodeLoc.plus(it.diff()) to it.inverse() }
+            .filter { it.first.isValid(MAX_LOC) }
+            .map { getDevNode(it.first) to it.second }
+            .toList()
     }
 
     fun gridHash(): String {
-        val sb = StringBuilder()
-        for (row in grid) {
-            for (node in row) {
-                val values = node.dataLoc.joinToString(".", "[", "]")
-                sb.append(values)
+        return "${this.emptyNodeLoc},${this.targetDataLoc}"
+    }
+}
+
+
+fun getEmptyNodeLoc(grid: List<List<DevNode>>): NodeLoc {
+    for (nodes in grid) {
+        for (node in nodes) {
+            if (node.dataLoc.isEmpty()) {
+                return node.loc
             }
         }
-        return sb.toString().sha256Hex()
     }
-
+    throw IllegalStateException("No empty node")
 }
 
 fun NodeLoc.distanceTo(o: NodeLoc): Int {
@@ -326,7 +235,7 @@ fun NodeLoc.distanceTo(o: NodeLoc): Int {
 
 fun createDevNode(id: Int, loc: NodeLoc, size: Int, used: Int): DevNode {
     return DevNode(
-        id,loc, size, used, if (used > 0) {
+        id, loc, size, used, if (used > 0) {
             listOf(id)
         } else {
             listOf()
@@ -360,5 +269,9 @@ fun createDevNodeGrid(nodes: List<DevNode>): DevNodeGrid {
         }
         grid.add(row)
     }
-    return DevNodeGrid(grid, maxLoc)
+    MAX_LOC = maxLoc
+    val targetDataLoc = MAX_LOC.first to 0
+    return DevNodeGrid(null, grid, targetDataLoc)
 }
+
+var MAX_LOC = 0 to 0

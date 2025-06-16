@@ -76,6 +76,16 @@ enum class Direction {
             NONE -> 'N'
         }
     }
+
+    fun inverse(): Direction {
+        return when (this) {
+            S -> N
+            N -> S
+            E -> W
+            W -> E
+            NONE -> NONE
+        }
+    }
 }
 
 fun parseDirection(c: Char): Direction {
