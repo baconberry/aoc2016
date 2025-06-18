@@ -43,4 +43,4 @@ bin/
 
 .idea/
 
-input.txt
+*input.txt
