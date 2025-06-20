@@ -5,6 +5,9 @@ import ds.GridMap
 import utils.CARDINAL_DIRECTIONS
 
 class D24 : Solver {
+
+    var isCircular = false
+
     override fun solve(lines: Array<String>, part: UInt): String {
         val gridMap = createCharGridmap(lines.toList())
         val digitLocations = gridMap.getNumericalLocations()
@@ -12,6 +15,9 @@ class D24 : Solver {
         val dijkstra = Dijkstra(gridMap)
         for (d in digitLocations.entries) {
             digitDistances[d.key] = dijkstra.completeShortestMap(d.value)
+        }
+        if (part == 2u) {
+            isCircular = true
         }
         val result = bfs(digitDistances, digitLocations, listOf(0))
         return "$result"
@@ -24,6 +30,9 @@ class D24 : Solver {
         distance: Int = 0
     ): Int {
         if (path.size == distances.size) {
+            if (isCircular) {
+                return distance + distances[path.last()]!![locations[path.first()]]!!
+            }
             return distance
         }
         var min = Int.MAX_VALUE
