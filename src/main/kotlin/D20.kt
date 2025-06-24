@@ -1,3 +1,4 @@
+import java.util.PriorityQueue
 import kotlin.math.max
 import kotlin.math.min
 
@@ -11,7 +12,7 @@ class D20 : Solver {
             .forEach { blackList.addRange(it) }
 
         if (part == 2u) {
-            return "${blackList.totalWhitelisted()}"
+            return "${blackList.totalMinusBlacklist()}"
         }
 
         return "${blackList.lowestAllowedNaive()}"
@@ -21,6 +22,23 @@ class D20 : Solver {
         val ranges = mutableListOf<LongRange>()
         fun addRange(range: LongRange) {
             ranges.add(range)
+        }
+
+        fun totalMinusBlacklist(): Int {
+            val total = 4294967295
+            val rangesSorted = ranges.sortedBy { it.first }
+            val localBL = merge(rangesSorted).sortedBy { it.first }
+            val q = PriorityQueue<LongRange>(Comparator.comparing { it.first })
+            q.addAll(localBL)
+            var prev = q.remove()
+            var totalWhitelisted = prev.first
+            while (q.isNotEmpty()) {
+                val range = q.remove()
+                totalWhitelisted += range.first - 1 - prev.last
+                prev = range
+            }
+            totalWhitelisted += total - prev.last
+            return totalWhitelisted.toInt()
         }
 
         fun lowestAllowedNaive(): Long {
@@ -36,17 +54,6 @@ class D20 : Solver {
             return -1
         }
 
-        fun totalWhitelisted(): Long {
-            val whitelist = excludeIp(listOf(0L..4294967295L), ranges)
-            val merged = merge(whitelist).sortedBy { it.first }
-            println("merged $merged")
-            var counter = 0L
-            for (w in merged) {
-                counter += w.count()
-            }
-            return counter
-        }
-
         private fun merge(whitelist: List<LongRange>): List<LongRange> {
             if (!whitelist.hasOverlaps()) {
                 return whitelist
@@ -56,34 +63,18 @@ class D20 : Solver {
             val result = mutableListOf<LongRange>()
             var merged = false
             for (n in newToMerge) {
-                if (value overlaps n) {
+                if (value overlaps n || value.last + 1 == n.first) {
                     merged = true
                     result.add(value merge n)
                 } else {
                     result.add(n)
                 }
             }
-            if(!merged){
+            if (!merged) {
                 result.add(value)
             }
             return merge(result)
         }
-
-        fun excludeIp(validRanges: List<LongRange>, blacklist: List<LongRange>): List<LongRange> {
-            if (blacklist.isEmpty()) {
-                return validRanges
-            }
-            val newBlacklist = blacklist.toMutableList()
-            val block = newBlacklist.removeFirst()
-            val result = mutableListOf<LongRange>()
-            for (r in validRanges) {
-                val splitted = r split block
-                result.addAll(splitted)
-            }
-            return excludeIp(result, newBlacklist)
-        }
-
-
     }
 }
 
@@ -110,7 +101,7 @@ infix fun LongRange.overlaps(o: LongRange): Boolean {
 }
 
 infix fun LongRange.merge(o: LongRange): LongRange {
-    require(this overlaps o) {
+    require(this overlaps o || this.last + 1 == o.first) {
         "There is no overlap"
     }
     return min(this.first, o.first)..max(this.last, o.last)
