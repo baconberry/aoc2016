@@ -1,31 +1,23 @@
-import kotlin.math.pow
-
 class D25 : Solver {
     override fun solve(lines: Array<String>, part: UInt): String {
-        val instructions = lines
-            .filter { it.isNotEmpty() }
-            .toList()
-
-        for (i in 0..100) {
+        for (i in 0..10000000) {
             val r = Registers(i)
             start(r)
-            println(r.out)
+            if (r.out.startsWith("0101010101010101010101010101010101")) {
+                println("$i: ${r.out}")
+                return "$i"
+            }
         }
-
-        return "0"
+        return "-1"
     }
 
     fun start(r: Registers) {
         r.d = r.a
         r.c = 9
         r.b = 282
-        do {
-            while (r.b > 0) {
-                r.d++
-                r.b--
-            }
-            r.c--
-        } while (r.c > 0)
+        r.d += r.b * r.c
+        r.b = 0
+        r.c = 0
         secA(r)
     }
 
@@ -41,17 +33,9 @@ class D25 : Solver {
     }
 
     private fun secC(r: Registers) {
-        r.c = 2
-        do {
-            if (r.b > 0) {
-                r.b--
-                r.c--
-            } else {
-                secD(r)
-                break
-            }
-        } while (r.c > 0)
-        r.a++
+        r.a += r.b / 2
+        r.b = r.b % 2
+        secD(r)
     }
 
     fun secD(r: Registers) {
