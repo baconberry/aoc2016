@@ -17,41 +17,38 @@ class D12 : Solver {
 
 }
 
-class Emu(originalInstructions: List<String>, val maxExecutions: Long = Long.MAX_VALUE) {
+class Emu(
+    originalInstructions: List<String>,
+    val maxExecutions: Long = Long.MAX_VALUE,
+    val maxOut: Int = Int.MAX_VALUE
+) {
     val instructions = ArrayList(originalInstructions)
     var pc = 0
     var registers = mutableMapOf<String, Int>()
+    val sout = StringBuilder()
 
     fun execute(): Boolean {
         var icounter = 0L
-        while (pc < instructions.size && icounter < maxExecutions) {
+        var outs = 0
+        while (pc < instructions.size && icounter < maxExecutions && outs < maxOut) {
             icounter++
             val instruction = instructions[pc]
             val nums = getIntList(instruction)
             val parts = instruction.split(" ")
-            if (instruction.startsWith("cpy")) {
-                copy(nums, parts)
-            }
-            if (instruction.startsWith("inc")) {
-                increment(parts)
-            }
-            if (instruction.startsWith("dec")) {
-                decrement(parts)
-            }
-            if (instruction.startsWith("jnz")) {
-                jumpIfNotZero(parts)
-            }
-            if (instruction.startsWith("tgl")) {
-                toggle(getNumber(parts[1]))
-            }
-            if (instruction.startsWith("mv")) {
-                move(parts)
-            }
-            if (instruction.startsWith("mul")) {
-                multiply(parts)
-            }
-            if (instruction.startsWith("sum")) {
-                sum(parts)
+            val ic = parts[0]
+            when (ic) {
+                "cpy" -> copy(nums, parts)
+                "inc" -> increment(parts)
+                "dec" -> decrement(parts)
+                "jnz" -> jumpIfNotZero(parts)
+                "tgl" -> toggle(getNumber(parts[1]))
+                "mv" -> move(parts)
+                "mul" -> multiply(parts)
+                "sum" -> sum(parts)
+                "out" -> {
+                    outs++
+                    sout.append("${getNumber(parts[1])}")
+                }
             }
             pc++
         }

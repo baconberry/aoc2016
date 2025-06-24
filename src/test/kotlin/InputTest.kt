@@ -7,12 +7,12 @@ class InputTest {
 
 
     @Test
-    @Ignore
+//    @Ignore
     fun solveInput(){
         val input = Files.readAllLines(File("input.txt").toPath())
             .toTypedArray()
 
-        val solver = D23()
+        val solver = D25()
 
         val result = solver.solve(input, 1u)
         println(result)
