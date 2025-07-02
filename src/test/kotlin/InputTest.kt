@@ -12,7 +12,7 @@ class InputTest {
         val input = Files.readAllLines(File("input.txt").toPath())
             .toTypedArray()
 
-        val solver = D25()
+        val solver = D11()
 
         val result = solver.solve(input, 1u)
         println(result)
