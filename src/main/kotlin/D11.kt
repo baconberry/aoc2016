@@ -1,7 +1,4 @@
-import java.util.PriorityQueue
-import java.util.concurrent.atomic.AtomicInteger
-import kotlin.collections.plus
-import kotlin.math.abs
+import java.util.*
 
 typealias Generator = String
 typealias DMicrochip = String
@@ -9,93 +6,13 @@ typealias DMicrochip = String
 class D11 : Solver {
     override fun solve(lines: Array<String>, part: UInt): String {
 
-        val f1 = D11.Floor(listOf("T", "P", "S"), listOf("T"))
-        val f2 = D11.Floor(listOf(), listOf("P", "S"))
-        val f3 = D11.Floor(listOf("PR", "R"), listOf("PR", "R"))
-        val f4 = D11.Floor()
-        val building = D11.Building(0, listOf(f1, f2, f3, f4))
+        val f1 = Floor(listOf("T", "P", "S"), listOf("T"))
+        val f2 = Floor(listOf(), listOf("P", "S"))
+        val f3 = Floor(listOf("PR", "R"), listOf("PR", "R"))
+        val f4 = Floor()
+        val building = Building(0, listOf(f1, f2, f3, f4))
         val result = bfs(building)
         return "$result"
-    }
-
-    fun dfs(
-        building: Building,
-        steps: Int = 0,
-        nfloors: Int = building.floors.size,
-        visited: MutableMap<String, Int> = mutableMapOf(),
-        tempMax: AtomicInteger = AtomicInteger(10_000)
-    ): Int {
-        if (building.isAllInLastFloor()) {
-            return steps
-        }
-        if (steps >= tempMax.get()) {
-            return Int.MAX_VALUE
-        }
-        var min = Int.MAX_VALUE
-        val options = building.moveOptions()
-//        val newSteps = steps + 1
-        for (opt in options) {
-            val buildingWithoutOption = building.removeOption(opt)
-            if (buildingWithoutOption == null) {
-                continue
-            }
-            //up
-            var movedFloor = buildingWithoutOption.elevatorAt + 1
-            while (movedFloor < nfloors) {
-                val moveIn = buildingWithoutOption.moveIn(movedFloor, opt)
-                if (moveIn != null) {
-                    val newSteps = steps + abs(movedFloor - buildingWithoutOption.elevatorAt)
-                    val moveInHash = moveIn.floorHash()
-                    if (!(moveInHash in visited && visited[moveInHash]!! < newSteps)) {
-                        visited[moveInHash] = newSteps
-                        val localResult = dfs(
-                            moveIn,
-                            newSteps,
-                            nfloors,
-                            visited,
-                            tempMax
-                        )
-                        if (localResult < min) {
-                            min = localResult
-                            if (min < tempMax.get()) {
-                                println("Found solution at $localResult steps")
-                                tempMax.set(min)
-                            }
-                        }
-                    }
-                }
-                movedFloor++
-            }
-
-            movedFloor = buildingWithoutOption.elevatorAt - 1
-            while (movedFloor >= 0) {
-                val moveIn = buildingWithoutOption.moveIn(movedFloor, opt)
-                if (moveIn != null) {
-                    val newSteps = steps + abs(movedFloor - buildingWithoutOption.elevatorAt)
-                    val moveInHash = moveIn.floorHash()
-                    if (!(moveInHash in visited && visited[moveInHash]!! < newSteps)) {
-                        visited[moveInHash] = newSteps
-                        val localResult = dfs(
-                            moveIn,
-                            newSteps,
-                            nfloors,
-                            visited,
-                            tempMax
-                        )
-                        if (localResult < min) {
-                            min = localResult
-                            if (min < tempMax.get()) {
-                                println("Found solution at $localResult steps")
-                                tempMax.set(min)
-                            }
-                        }
-                    }
-                }
-                movedFloor--
-            }
-        }
-
-        return min
     }
 
     fun bfs(starter: Building): Int {
@@ -107,12 +24,10 @@ class D11 : Solver {
         while (q.isNotEmpty()) {
             val building = q.remove()
             if (building.first.isAllInLastFloor()) {
-                println("Found solution ${building.second}")
                 return building.second.size
             }
             if (building.second.size != depth) {
                 depth = building.second.size
-                println("Exploring depth [$depth]")
             }
 
 
@@ -135,7 +50,6 @@ class D11 : Solver {
 
         return Int.MAX_VALUE
     }
-
 
     data class Floor(val generators: List<Generator> = listOf(), val microchips: List<DMicrochip> = listOf()) {
         fun isValid(): Boolean {
@@ -169,13 +83,10 @@ class D11 : Solver {
                 for (j in i + 1..<floor.microchips.size) {
                     result.add(Floor(listOf(), listOf(micro, floor.microchips[j])))
                 }
-                //generator will be already addressed in the for above
             }
-//            val set = mutableSetOf<Pair<Int, Int>>()
 
             return result
                 .filter { it.isValid() }
-//                .filter { set.add(it.generators.size to it.microchips.size) }
                 .sortedBy { -(it.generators.size + it.microchips.size) }
                 .toList()
 
@@ -204,7 +115,7 @@ class D11 : Solver {
         }
 
         fun moveIn(floorAt: Int, opt: D11.Floor): Building? {
-            if(floorAt< 0 || floorAt>=floors.size){
+            if (floorAt < 0 || floorAt >= floors.size) {
                 return null
             }
             val floor = floors[floorAt]
@@ -224,15 +135,6 @@ class D11 : Solver {
             return Building(floorAt, newFloors)
         }
 
-
-        fun score(): Int {
-            var score = 0
-            for (i in 0..<floors.size) {
-                score += (floors.size - i) * (floors[i].generators.size + floors[i].microchips.size)
-            }
-            return score
-        }
-
         fun floorHash(): String {
             val sb = StringBuilder()
             sb.append(elevatorAt)
@@ -245,16 +147,6 @@ class D11 : Solver {
             }
 
             return sb.toString()
-        }
-
-        fun equalsHaha(other: Any?): Boolean {
-            if (other !is Building) {
-                return false
-            }
-            val otherf = other.floors.subList(0, other.floors.size - 1)
-            return this.floors
-                .take(this.floors.size - 1)
-                .all { it in otherf }
         }
     }
 }
