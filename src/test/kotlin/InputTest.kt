@@ -14,7 +14,7 @@ class InputTest {
 
         val solver = D11()
 
-        val result = solver.solve(input, 1u)
+        val result = solver.solve(input, 2u)
         println(result)
     }
 }

@@ -6,10 +6,13 @@ typealias DMicrochip = String
 class D11 : Solver {
     override fun solve(lines: Array<String>, part: UInt): String {
 
-        val f1 = Floor(listOf("T", "P", "S"), listOf("T"))
+        var f1 = Floor(listOf("T", "P", "S"), listOf("T"))
         val f2 = Floor(listOf(), listOf("P", "S"))
         val f3 = Floor(listOf("PR", "R"), listOf("PR", "R"))
         val f4 = Floor()
+        if (part == 2u) {
+            f1 = Floor(listOf("T", "P", "S", "E", "D"), listOf("T", "E", "D"))
+        }
         val building = Building(0, listOf(f1, f2, f3, f4))
         val result = bfs(building)
         return "$result"
@@ -27,6 +30,7 @@ class D11 : Solver {
                 return building.second.size
             }
             if (building.second.size != depth) {
+                println("exploring depth [$depth]")
                 depth = building.second.size
             }
 
@@ -53,7 +57,7 @@ class D11 : Solver {
 
     data class Floor(val generators: List<Generator> = listOf(), val microchips: List<DMicrochip> = listOf()) {
         fun isValid(): Boolean {
-            return generators.isEmpty() || microchips.isEmpty() || microchips.containsAll(generators)
+            return generators.isEmpty() || microchips.isEmpty() || generators.containsAll(microchips)
         }
 
         fun isEmpty(): Boolean {
